@@ -1,3 +1,4 @@
+from plone.app.registry.browser.controlpanel import RegistryEditForm, ControlPanelFormWrapper
 from zope.interface import implements, Interface
 from zope.component import adapts
 try:
@@ -12,12 +13,13 @@ from zope.schema import Choice
 from zope.schema import Tuple
 from zope.schema import List
 
-from Products.CMFDefault.formlib.schema import SchemaAdapterBase
+from z3c.form import field
+from z3c.form import group
+
 from Products.CMFCore.utils import getToolByName
 from Products.CMFPlone.interfaces import IPloneSiteRoot
 
-from plone.fieldsets.fieldsets import FormFieldsets
-from plone.app.controlpanel.form import ControlPanelForm
+# from plone.fieldsets.fieldsets import FormFieldsets
 
 from collective.ckeditor import siteMessageFactory as _
 
@@ -368,13 +370,12 @@ class ICKEditorSchema(ICKEditorBaseSchema, ICKEditorSkinSchema,
     """
 
 
-class CKEditorControlPanelAdapter(SchemaAdapterBase):
+class CKEditorControlPanelAdapter(object):
 
     implements(ICKEditorSchema)
     adapts(IPloneSiteRoot)
 
     def __init__(self, context):
-        super(CKEditorControlPanelAdapter, self).__init__(context)
         self.portal = getSite()
         pprop = getToolByName(self.portal, 'portal_properties')
         self.context = pprop.ckeditor_properties
@@ -736,27 +737,37 @@ class CKEditorControlPanelAdapter(SchemaAdapterBase):
     entities_latin = property(get_entities_latin, set_entities_latin)
 
 
-basicset = FormFieldsets(ICKEditorBaseSchema)
-basicset.id = 'cke_base'
-basicset.label = _(u'Basic settings')
-
-skinset = FormFieldsets(ICKEditorSkinSchema)
-skinset.id = 'cke_skin'
-skinset.label = _(u'Editor Skin')
-
-browserset = FormFieldsets(ICKEditorBrowserSchema)
-browserset.id = 'cke_browser'
-browserset.label = _(u'Resources Browser')
-
-advancedset = FormFieldsets(ICKEditorAdvancedSchema)
-advancedset.id = 'cke_advanced'
-advancedset.label = _(u'Advanced Configuration')
+class CKEditorBaseSchemaForm(group.GroupForm):
+    label = _(u"Basic settings")
+    fields = field.Fields(ICKEditorBaseSchema)
 
 
-class CKEditorControlPanel(ControlPanelForm):
+class CKEditorSkinSchemaForm(group.GroupForm):
+    label = _(u"Editor Skin")
+    fields = field.Fields(ICKEditorSkinSchema)
 
-    form_fields = FormFieldsets(basicset, skinset, browserset, advancedset)
+class CKEditorBrowserSchemaForm(group.GroupForm):
+    label = _(u"Resources Browser")
+    fields = field.Fields(ICKEditorBrowserSchema)
 
+class CKEditorAdvancedSchemaForm(group.GroupForm):
+    label = _(u"Advanced Configuration")
+    fields = field.Fields(ICKEditorAdvancedSchema)
+
+class CKEditorControlPanelForm(RegistryEditForm):
+    schema = ICKEditorSchema
+    # form_fields = FormFieldsets(basicset, skinset, browserset, advancedset)
     label = _("CKEditor settings")
     description = _("Control CKEditor settings for Plone.")
     form_name = _("CKEditor settings")
+    groups = (CKEditorBaseSchemaForm, CKEditorSkinSchemaForm, CKEditorBrowserSchemaForm, CKEditorAdvancedSchemaForm)
+
+
+
+class CKEditorControlPanel(ControlPanelFormWrapper):
+    form = CKEditorControlPanelForm
+
+
+
+
+

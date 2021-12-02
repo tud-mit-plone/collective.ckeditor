@@ -6,9 +6,9 @@
 
  <!-- wysiwyg default widget -->
  <div metal:define-macro="wysiwygEditorBox">
-  <tal:defines define="fname fieldName|inputname|nothing;
+  <tal:defines define="fname inputname|nothing;
                        ckview context/@@ckeditor_view;
-                       usesCKeditor python:ckview.contentUsesCKeditor(fieldname=fname);
+                       usesCKeditor python:True;
                        finder_context nocall:formlib_field/context|nothing">
     <tal:block condition="usesCKeditor">
      <div id="alerts"><!-- --></div>
@@ -37,28 +37,24 @@
      </tal:block>
      <textarea cols="80"
                rows="25"
-               tabindex=""
                class="ckeditor_plone"
                tal:content="inputvalue"
                style="display:none"
                tal:attributes="name inputname;
                                id inputname;
                                onfocus onfocus|nothing;
-                               onblur onblur|nothing;
-                               tabindex tabindex|nothing;"></textarea>
+                               onblur onblur|nothing;"></textarea>
 
     </tal:block>
     <tal:block condition="not: usesCKeditor">
      <textarea cols="80"
                rows="25"
-               tabindex=""
                name="text"
                tal:content="inputvalue"
                tal:attributes="name inputname;
                                id inputname;
                                onfocus onfocus|nothing;
-                               onblur onblur|nothing;
-                               tabindex tabindex|nothing;" id="Textarea2"></textarea>
+                               onblur onblur|nothing;" id="Textarea2"></textarea>
     </tal:block>
   </tal:defines>
  </div>
@@ -87,18 +83,15 @@
            </div>
         </div>
         <div class="field"
-             tal:define="tabindex tabindex/next;
-                         text_format python:request.get('text_format', getattr(context,'text_format','structured-text'))">
+             tal:define="text_format python:request.get('text_format', getattr(context,'text_format','structured-text'))">
           <input class="noborder"
                  type="radio"
                  name="text_format"
                  value="structured-text"
-                 tabindex=""
                  id="cb_structuredtext"
                  onfocus="formtooltip('format_help',1)"
                  onblur="formtooltip('format_help',0)"
-                 tal:attributes="checked python:test(text_format=='structured-text', 1, '');
-                                 tabindex tabindex;"
+                 tal:attributes="checked python: 1 if text_format=='structured-text' else ''"
                  />
           <label for="cb_structuredtext" i18n:translate="structured_text">Structured Text</label> <br />
 
@@ -106,10 +99,8 @@
                  type="radio"
                  name="text_format"
                  value="html"
-                 tabindex=""
                  id="cb_html"
-                 tal:attributes="checked python:test(text_format=='html', 1, '');
-                                 tabindex tabindex;"
+                 tal:attributes="checked python: 1 if text_format=='html' else ''"
                  onfocus="formtooltip('format_help',1)"
                  onblur="formtooltip('format_help',0)"
                  />
@@ -119,10 +110,8 @@
                  type="radio"
                  name="text_format"
                  value="plain"
-                 tabindex=""
                  id="cb_plain"
-                 tal:attributes="checked python:test(text_format=='plain', 1, '');
-                                 tabindex tabindex;"
+                 tal:attributes="checked python: 1 if text_format=='plain' else ''"
                  onfocus="formtooltip('format_help',1)"
                  onblur="formtooltip('format_help',0)"
                  />
@@ -132,5 +121,4 @@
     </tal:block>
   </tal:defines>
  </div>
-
 </html>
