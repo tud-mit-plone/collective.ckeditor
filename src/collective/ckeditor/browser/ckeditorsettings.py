@@ -1,6 +1,7 @@
 from plone.app.registry.browser.controlpanel import RegistryEditForm, ControlPanelFormWrapper
-from zope.interface import implements, Interface
 from zope.component import adapts
+from zope.interface import Interface, implementer
+
 try:
     from zope.component.hooks import getSite
 except:  # Plone < 4.3
@@ -370,9 +371,9 @@ class ICKEditorSchema(ICKEditorBaseSchema, ICKEditorSkinSchema,
     """
 
 
+@implementer(ICKEditorSchema)
 class CKEditorControlPanelAdapter(object):
 
-    implements(ICKEditorSchema)
     adapts(IPloneSiteRoot)
 
     def __init__(self, context):

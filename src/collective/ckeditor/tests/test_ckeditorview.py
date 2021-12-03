@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-import unittest
 import json
-from plone import api
+import unittest
 
-from zope.component import getMultiAdapter
-from ..testing import CKEDITOR_INTEGRATION
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import setRoles
+
+from plone import api
+from zope.component import getMultiAdapter
+from ..testing import CKEDITOR_INTEGRATION
 
 
 class TestCKeditorViewTestCase(unittest.TestCase):
@@ -95,11 +96,11 @@ class TestCKeditorViewTestCase(unittest.TestCase):
         self.assertEquals(api.content.get_uuid(image), uuid)
 
 from plone.app.blob.interfaces import IFileUpload
-from zope.interface import implements
+from zope.interface import implementer
 
+
+@implementer(IFileUpload)
 class DummyFileUpload:
-    
-    implements(IFileUpload)
 
     def __init__(self, data='', filename='', content_type=''):
         self.data = data

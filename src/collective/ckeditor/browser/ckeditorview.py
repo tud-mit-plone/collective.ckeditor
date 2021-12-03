@@ -1,31 +1,31 @@
 import json
 import re
+
+import demjson
 from Acquisition import aq_inner
 from Acquisition import aq_parent
-from Products.CMFPlone.resources.browser.styles import StylesBase, StylesView
+from Products.CMFCore.interfaces import IContentish
+from Products.CMFCore.interfaces import IFolderish
+from Products.CMFCore.utils import getToolByName
+from Products.CMFPlone.resources.browser.styles import StylesView
+from Products.Five import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from Products.PythonScripts.standard import url_quote
+from collective.ckeditor import LOG
+from collective.ckeditor import siteMessageFactory as _
+from collective.ckeditor.config import CKEDITOR_BASIC_TOOLBAR
+from collective.ckeditor.config import CKEDITOR_FULL_TOOLBAR
+from collective.ckeditor.config import CKEDITOR_PLONE_DEFAULT_TOOLBAR
+from collective.ckeditor.config import CKEDITOR_SUPPORTED_LANGUAGE_CODES
+from plone import api
+from plone.app.portlets.browser.interfaces import IPortletAdding
+from plone.portlets.interfaces import IPortletAssignment
+from plone.registry.interfaces import IRegistry
 from zExceptions import Unauthorized
 from zope import component
 from zope.component import getUtility
-from zope.interface import implements, Interface
-from Products.PythonScripts.standard import url_quote
-from Products.Five import BrowserView
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
-from Products.CMFCore.utils import getToolByName
-from Products.CMFCore.interfaces import IContentish
-from Products.CMFCore.interfaces import IFolderish
-from plone import api
-from plone.portlets.interfaces import IPortletAssignment
-from plone.registry.interfaces import IRegistry
-from plone.app.portlets.browser.interfaces import IPortletAdding
-from collective.ckeditor import LOG
-from collective.ckeditor.config import CKEDITOR_PLONE_DEFAULT_TOOLBAR
-from collective.ckeditor.config import CKEDITOR_BASIC_TOOLBAR
-from collective.ckeditor.config import CKEDITOR_FULL_TOOLBAR
-from collective.ckeditor.config import CKEDITOR_SUPPORTED_LANGUAGE_CODES
-from collective.ckeditor import siteMessageFactory as _
+from zope.interface import Interface, implementer
 
-
-import demjson
 demjson.dumps = demjson.encode
 demjson.loads = demjson.decode
 
@@ -49,11 +49,11 @@ class ICKeditorView(Interface):
     """
 
 
+@implementer(ICKeditorView)
 class CKeditorView(BrowserView):
     """
     CKeditor browser view
     """
-    implements(ICKeditorView)
 
     def __init__(self, context, request):
         self.context = context
@@ -516,8 +516,8 @@ class IWidgetSettings(Interface):
     pass
 
 
+@implementer(IWidgetSettings)
 class Z3WidgetSettings(object):
-    implements(IWidgetSettings)
 
     def __init__(self, context):
         self.context = context
@@ -586,8 +586,8 @@ class FormlibWidgetSettings(Z3WidgetSettings):
         return content_item
 
 
+@implementer(IWidgetSettings)
 class ATWidgetSettings(object):
-    implements(IWidgetSettings)
 
     def __init__(self, context):
         self.context = context

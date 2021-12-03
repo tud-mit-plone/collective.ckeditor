@@ -3,8 +3,10 @@
 # Date: $Date: 2006-08-11
 # Copyright: quintagroup.com
 
-from zope.interface import implements
 import re
+
+from zope.interface import implementer
+
 try:
     from Products.PortalTransforms.interfaces import ITransform
 except ImportError:
@@ -14,10 +16,9 @@ from collective.ckeditor.config import TAG_PATTERN, UID_PATTERN
 from plone.app.uuid.utils import uuidToURL
 
 
+@implementer(ITransform)
 class ck_ruid_to_url:
     """Transform which replaces resolve uid in absolute urls"""
-
-    implements(ITransform)
 
     __name__ = "ck_ruid_to_url"
     inputs = ('text/html',)

@@ -8,9 +8,10 @@ try:
 except ImportError:
     from zope.app.schema.vocabulary import IVocabularyFactory
 
-from zope.interface import implements
-from zope.schema.vocabulary import SimpleVocabulary
+from zope.interface import implementer
 from zope.schema.vocabulary import SimpleTerm
+from zope.schema.vocabulary import SimpleVocabulary
+
 try:
     from zope.component.hooks import getSite
 except ImportError:
@@ -66,10 +67,10 @@ def _infoDictForType(ptype, portal_types, utranslate):
     }
 
 
+@implementer(IVocabularyFactory)
 class CKEditorSkinVocabulary(object):
     """Vocabulary factory for ckeditor skin
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         items = [SimpleTerm('moonocolor', 'moonocolor',
@@ -80,10 +81,11 @@ class CKEditorSkinVocabulary(object):
 
 CKEditorSkinVocabularyFactory = CKEditorSkinVocabulary()
 
+
+@implementer(IVocabularyFactory)
 class CKEditorToolBarVocabulary(object):
     """Vocabulary factory for ckeditor toolbar
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         items = [SimpleTerm('Basic', 'Basic',
@@ -102,10 +104,10 @@ class CKEditorToolBarVocabulary(object):
 CKEditorToolBarVocabularyFactory = CKEditorToolBarVocabulary()
 
 
+@implementer(IVocabularyFactory)
 class CKEditorFilteringVocabulary(object):
     """Vocabulary factory for ckeditor filtering
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         items = [SimpleTerm('default', 'Based on UI',
@@ -120,10 +122,10 @@ class CKEditorFilteringVocabulary(object):
 CKEditorFilteringVocabularyFactory = CKEditorFilteringVocabulary()
 
 
+@implementer(IVocabularyFactory)
 class CKEditorFileTypesVocabulary(object):
     """Vocabulary factory for ckeditor file types
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         context = getattr(context, 'context', context)
@@ -140,10 +142,10 @@ class CKEditorFileTypesVocabulary(object):
 CKEditorFileTypesVocabularyFactory = CKEditorFileTypesVocabulary()
 
 
+@implementer(IVocabularyFactory)
 class CKEditorUploadFileTypeVocabulary(object):
     """Vocabulary factory for ckeditor file type upload
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         context = getattr(context, 'context', context)
@@ -164,10 +166,10 @@ class CKEditorUploadFileTypeVocabulary(object):
 CKEditorUploadFileTypeVocabularyFactory = CKEditorUploadFileTypeVocabulary()
 
 
+@implementer(IVocabularyFactory)
 class CKEditorImageTypesVocabulary(object):
     """Vocabulary factory for ckeditor image types
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         context = getattr(context, 'context', context)
@@ -184,10 +186,10 @@ class CKEditorImageTypesVocabulary(object):
 CKEditorImageTypesVocabularyFactory = CKEditorImageTypesVocabulary()
 
 
+@implementer(IVocabularyFactory)
 class CKEditorUploadImageTypeVocabulary(object):
     """Vocabulary factory for ckeditor image type upload
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         context = getattr(context, 'context', context)
@@ -208,10 +210,10 @@ class CKEditorUploadImageTypeVocabulary(object):
 CKEditorUploadImageTypeVocabularyFactory = CKEditorUploadImageTypeVocabulary()
 
 
+@implementer(IVocabularyFactory)
 class CKEditorFolderTypesVocabulary(object):
     """Vocabulary factory for ckeditor folder types
     """
-    implements(IVocabularyFactory)
 
     def __call__(self, context):
         context = getattr(context, 'context', context)
