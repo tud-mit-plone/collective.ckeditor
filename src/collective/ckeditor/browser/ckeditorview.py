@@ -402,6 +402,9 @@ class CKeditorView(BrowserView):
         return params_js_string
 
     def getCK_vars(self):
+        request = self.request
+        response = request.RESPONSE
+        response.setHeader('Content-Type', 'application/x-javascript')
         return CK_VARS_TEMPLATE % {'portal_url': self.portal_url}
 
     def getCustomTemplatesConfig(self, customTemplates):
