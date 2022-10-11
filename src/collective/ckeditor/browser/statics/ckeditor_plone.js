@@ -64,7 +64,10 @@ if ( window.CKEDITOR )
 
 			html += '</p><p>' + ck_mf(locale.ckeditorStillUsable) + '</p>';
 
-			document.getElementById( 'alerts' ).innerHTML = html;
+			let alerts = document.getElementById( 'alerts' );
+            if (alerts) {
+                alerts.innerHTML = html;
+            }
 		};
 
         var init = function(i18n){
