@@ -7,6 +7,8 @@ if ( typeof console != 'undefined' )
 var ck_mf = function(m){
     return m;
 };
+// make sure i18n variable is global
+var i18n;
 
 var ck_locales = {
     "messagefactory": ck_mf,
@@ -85,7 +87,7 @@ if ( window.CKEDITOR )
             try {
                 require(['mockup-i18n'], function(I18N) {
                     if (typeof(i18n) === 'undefined') {
-                        var i18n = new I18N();
+                        i18n = new I18N()
                     }
                     init(i18n);
                 });
@@ -93,7 +95,7 @@ if ( window.CKEDITOR )
             catch(e) {
                 try {
                     init(jarn.i18n);
-                } catch (e) {
+                } catch(e) {
                     console.log('failed to load i18n');
                 }
             }
