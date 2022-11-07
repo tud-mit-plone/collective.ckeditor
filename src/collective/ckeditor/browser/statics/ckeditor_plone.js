@@ -82,12 +82,12 @@ if ( window.CKEDITOR )
 
 		$(document).ready(function() {
             /* Setting up jsi18n message factory for ckeditor with jsi18n (from mockup) via requirejs.
-                Use a fallback for plone 4 without require but
+                Use a fallback for plone 4 without require but jarn dependency.
             */
             try {
                 require(['mockup-i18n'], function(I18N) {
                     if (typeof(i18n) === 'undefined') {
-                        i18n = new I18N()
+                        i18n = new I18N();
                     }
                     init(i18n);
                 });
@@ -96,13 +96,13 @@ if ( window.CKEDITOR )
                 try {
                     init(jarn.i18n);
                 } catch(e) {
-                    console.log('failed to load i18n');
+                    console.log('Failed to load i18n via mockup as well as jarn fallback.');
                 }
             }
 
             // Show a friendly compatibility message as soon as the page is loaded,
             // for those browsers that are not compatible with CKEditor.
-            if ( CKEDITOR.env.isCompatible )
+            if ( !CKEDITOR.env.isCompatible )
                 showCompatibilityMsg();
         });
 	})();

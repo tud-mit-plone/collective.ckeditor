@@ -190,11 +190,10 @@ class CKeditorView(BrowserView):
         TODO : improve it with a control panel
         """
         css_jsList = []
-        # retrieve plone.htmlhead.links viewlet manager
-        view = View(self.portal, self.request)
+        # retrieve plone.htmlhead.links viewlet manager using the current view
         manager_name = 'plone.htmlhead.links'
-        # viewlet managers are found by Multi-Adapter lookup
-        adapter = queryMultiAdapter((self.portal, self.request, view), IViewletManager, manager_name, default=None)
+        # viewlet managers are found by Multi-Adapter lookup on Request and a view
+        adapter = queryMultiAdapter((self.portal, self.request, self), IViewletManager, manager_name, default=None)
         if adapter:
             # TODO: can we lookup the viewlet directly? (what if it was transferred to another manager?)
             styles_viewlet = adapter.get("plone.resourceregistries.styles")
