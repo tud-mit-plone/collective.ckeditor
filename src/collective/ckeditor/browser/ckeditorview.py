@@ -6,16 +6,18 @@ from zExceptions import Unauthorized
 from zope import component
 from zope.component import getUtility
 from zope.interface import implements, Interface
+from zope.publisher.interfaces.browser import IBrowserRequest
+from zope.viewlet.interfaces import IViewlet
 from Products.PythonScripts.standard import url_quote
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.interfaces import IContentish
 from Products.CMFCore.interfaces import IFolderish
-from Products.Five.browser import BrowserView as View
 from plone import api
 from plone.portlets.interfaces import IPortletAssignment
 from plone.registry.interfaces import IRegistry
+from plone.app.customerize import registration
 from plone.app.portlets.browser.interfaces import IPortletAdding
 from collective.ckeditor import LOG
 from collective.ckeditor.config import CKEDITOR_PLONE_DEFAULT_TOOLBAR
@@ -23,9 +25,6 @@ from collective.ckeditor.config import CKEDITOR_BASIC_TOOLBAR
 from collective.ckeditor.config import CKEDITOR_FULL_TOOLBAR
 from collective.ckeditor.config import CKEDITOR_SUPPORTED_LANGUAGE_CODES
 from collective.ckeditor import siteMessageFactory as _
-from zope.component import queryMultiAdapter
-from zope.viewlet.interfaces import IViewletManager
-
 
 import demjson
 demjson.dumps = demjson.encode
@@ -189,21 +188,28 @@ class CKeditorView(BrowserView):
         by default all bundled css items from resource registry + plone_ckeditor_area.css
         TODO : improve it with a control panel
         """
-        css_jsList = []
-        # retrieve plone.htmlhead.links viewlet manager using the current view
-        manager_name = 'plone.htmlhead.links'
-        # viewlet managers are found by Multi-Adapter lookup on Request and a view
-        adapter = queryMultiAdapter((self.portal, self.request, self), IViewletManager, manager_name, default=None)
-        if adapter:
-            # TODO: can we lookup the viewlet directly? (what if it was transferred to another manager?)
-            styles_viewlet = adapter.get("plone.resourceregistries.styles")
-            styles_viewlet.update()
-            css_res = styles_viewlet.styles()
-            for css in css_res:
-                if css["rel"] == 'stylesheet':
-                    css_jsList.append(css["src"])
-        css_jsList.append("%s/++resource++ckeditor_for_plone/ckeditor_plone_area.css" % self.portal_url)
-        return "[" + ", ".join(["'%s'" % item for item in css_jsList]) + "]"
+        css_list = []
+
+        context = aq_inner(self.context)
+        request = self.request
+
+        # loop over view/viewlet registrations from adapters registry
+        for reg in registration.getViews(IBrowserRequest):
+            # check provided to filter out conflicting BrowserViews with the same name
+            if reg.name == "plone.resourceregistries.styles" and reg.provided == IViewlet:
+                # use factory method with initialization parameters: context, request, view
+                viewlet = reg.factory(context, request, self, None)
+                # update (the viewlet works without an acquisition chain)
+                viewlet.update()
+                # get and filter the style items
+                css_list = [css["src"] for css in viewlet.styles() if css["rel"] == "stylesheet"]
+                # done, stop iteration
+                break
+
+        # append ckeditor canvas area styles
+        css_list.append("%s/++resource++ckeditor_for_plone/ckeditor_plone_area.css" % self.portal_url)
+        # return as string containing javascript list
+        return "[" + ", ".join(["'%s'" % item for item in css_list]) + "]"
 
     def getCK_finder_url(self, type=None):
         """
