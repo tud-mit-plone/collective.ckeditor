@@ -6,16 +6,18 @@ from zExceptions import Unauthorized
 from zope import component
 from zope.component import getUtility
 from zope.interface import implements, Interface
+from zope.publisher.interfaces.browser import IBrowserRequest
+from zope.viewlet.interfaces import IViewlet
 from Products.PythonScripts.standard import url_quote
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.interfaces import IContentish
 from Products.CMFCore.interfaces import IFolderish
-from Products.ResourceRegistries.tools.packer import JavascriptPacker
 from plone import api
 from plone.portlets.interfaces import IPortletAssignment
 from plone.registry.interfaces import IRegistry
+from plone.app.customerize import registration
 from plone.app.portlets.browser.interfaces import IPortletAdding
 from collective.ckeditor import LOG
 from collective.ckeditor.config import CKEDITOR_PLONE_DEFAULT_TOOLBAR
@@ -23,7 +25,6 @@ from collective.ckeditor.config import CKEDITOR_BASIC_TOOLBAR
 from collective.ckeditor.config import CKEDITOR_FULL_TOOLBAR
 from collective.ckeditor.config import CKEDITOR_SUPPORTED_LANGUAGE_CODES
 from collective.ckeditor import siteMessageFactory as _
-
 
 import demjson
 demjson.dumps = demjson.encode
@@ -184,35 +185,31 @@ class CKeditorView(BrowserView):
         """
         return list of style sheets applied to ckeditor area
         the list is returned as a javascript string
-        by default portal_css mixin + plone_ckeditor_area.css
+        by default all bundled css items from resource registry + plone_ckeditor_area.css
         TODO : improve it with a control panel
         """
+        css_list = []
+
         context = aq_inner(self.context)
-        portal = self.portal
-        portal_url = self.portal_url
-        portal_css = getToolByName(portal, 'portal_css')
-        css_jsList = "["
-        current_skin = context.getCurrentSkinName()
-        skinname = url_quote(current_skin)
-        css_res = portal_css.getEvaluatedResources(context)
-        for css in css_res:
-            media = css.getMedia()
-            rel = css.getRel()
-            if media not in ('print', 'projection') and rel == 'stylesheet':
-                cssPloneId = css.getId()
-                if ABSOLUTE_URL.match(cssPloneId):
-                    css_jsList += "'%s', " % cssPloneId
-                else:
-                    cssPlone = '%s/portal_css/%s/%s' % (portal_url,
-                                                        skinname,
-                                                        cssPloneId)
-                    css_jsList += "'%s', " % cssPlone
+        request = self.request
 
-        baseres = '++resource++ckeditor_for_plone'
-        css_jsList += "'%s/%s/ckeditor_plone_area.css']" % (portal_url,
-                                                            baseres)
+        # loop over view/viewlet registrations from adapters registry
+        for reg in registration.getViews(IBrowserRequest):
+            # check provided to filter out conflicting BrowserViews with the same name
+            if reg.name == "plone.resourceregistries.styles" and reg.provided == IViewlet:
+                # use factory method with initialization parameters: context, request, view
+                viewlet = reg.factory(context, request, self, None)
+                # update (the viewlet works without an acquisition chain)
+                viewlet.update()
+                # get and filter the style items
+                css_list = [css["src"] for css in viewlet.styles() if css["rel"] == "stylesheet"]
+                # done, stop iteration
+                break
 
-        return css_jsList
+        # append ckeditor canvas area styles
+        css_list.append("%s/++resource++ckeditor_for_plone/ckeditor_plone_area.css" % self.portal_url)
+        # return as string containing javascript list
+        return "[" + ", ".join(["'%s'" % item for item in css_list]) + "]"
 
     def getCK_finder_url(self, type=None):
         """
@@ -407,9 +404,12 @@ class CKeditorView(BrowserView):
         response.setHeader('Cache-control', cache_header)
         response.setHeader('Content-Type', 'application/x-javascript')
 
-        return JavascriptPacker('safe').pack(params_js_string)
+        return params_js_string
 
     def getCK_vars(self):
+        request = self.request
+        response = request.RESPONSE
+        response.setHeader('Content-Type', 'application/x-javascript')
         return CK_VARS_TEMPLATE % {'portal_url': self.portal_url}
 
     def getCustomTemplatesConfig(self, customTemplates):
@@ -442,7 +442,7 @@ CKEDITOR.stylesSet.add('plone', styles);""" % demjson.dumps(styles)
             's-maxage=0,max-age=0,no-cache')
         response.setHeader('Content-Type', 'application/x-javascript')
 
-        return JavascriptPacker('safe').pack(menu_styles_js_string)
+        return menu_styles_js_string
 
     def customize_browserurl(self, settings, language):
         params = self.cke_params

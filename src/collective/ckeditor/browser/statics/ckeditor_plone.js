@@ -7,6 +7,8 @@ if ( typeof console != 'undefined' )
 var ck_mf = function(m){
     return m;
 };
+// make sure i18n variable is global
+var i18n;
 
 var ck_locales = {
     "messagefactory": ck_mf,
@@ -64,25 +66,39 @@ if ( window.CKEDITOR )
 
 			html += '</p><p>' + ck_mf(locale.ckeditorStillUsable) + '</p>';
 
-			document.getElementById( 'alerts' ).innerHTML = html;
+			let alerts = document.getElementById( 'alerts' );
+            if (alerts) {
+                alerts.innerHTML = html;
+            }
 		};
 
+        var init = function(i18n){
+            let lang = $('html').attr('lang');
+            // get the translation tool catalog for the given language and domain
+            i18n.loadCatalog('collective.ckeditor', lang);
+            // initialize the message factory
+            ck_mf = i18n.MessageFactory('collective.ckeditor', lang);
+        }
+
 		$(document).ready(function() {
-            /* Setting up jsi18n message factory for ckeditor with jsi18n (from mockup) */
-            require(['mockup-i18n'], function(I18N) {
-                try {
+            /* Setting up jsi18n message factory for ckeditor with jsi18n (from mockup) via requirejs.
+                Use a fallback for plone 4 without require but jarn dependency.
+            */
+            try {
+                require(['mockup-i18n'], function(I18N) {
                     if (typeof(i18n) === 'undefined') {
-                        var i18n = new I18N();
+                        i18n = new I18N();
                     }
-                    var lang = $('html').attr('lang');
-                    // get the translation tool catalog for the given language and domain
-                    i18n.loadCatalog('collective.ckeditor', lang);
-                    // let's initialize message factory
-                    ck_mf = i18n.MessageFactory('collective.ckeditor', lang);
-                } catch (e) {
-                    console.log('failed to load i18n');
+                    init(i18n);
+                });
+            }
+            catch(e) {
+                try {
+                    init(jarn.i18n);
+                } catch(e) {
+                    console.log('Failed to load i18n via mockup as well as jarn fallback.');
                 }
-            });
+            }
 
             // Show a friendly compatibility message as soon as the page is loaded,
             // for those browsers that are not compatible with CKEditor.
