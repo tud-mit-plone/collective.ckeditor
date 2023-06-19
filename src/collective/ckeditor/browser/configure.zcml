@@ -44,7 +44,7 @@
         for="*"
         class=".ckeditorview.CKeditorView"
         permission="zope.Public"
-        allowed_attributes="cke_config_url widget_settings contentUsesCKeditor"
+        allowed_attributes="cke_config_url widget_settings contentUsesCKeditor getWysiwygEditor"
         />
 
     <browser:page

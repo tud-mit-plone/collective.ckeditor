@@ -18,6 +18,9 @@ from plone import api
 from plone.portlets.interfaces import IPortletAssignment
 from plone.registry.interfaces import IRegistry
 from plone.app.customerize import registration
+from plone.app.textfield.utils import getDefaultWysiwygEditor
+from plone.app.textfield.utils import getAvailableWysiwygEditors
+from plone.app.textfield.utils import getWysiwygEditor
 from plone.app.portlets.browser.interfaces import IPortletAdding
 from collective.ckeditor import LOG
 from collective.ckeditor.config import CKEDITOR_PLONE_DEFAULT_TOOLBAR
@@ -25,6 +28,8 @@ from collective.ckeditor.config import CKEDITOR_BASIC_TOOLBAR
 from collective.ckeditor.config import CKEDITOR_FULL_TOOLBAR
 from collective.ckeditor.config import CKEDITOR_SUPPORTED_LANGUAGE_CODES
 from collective.ckeditor import siteMessageFactory as _
+
+
 
 import demjson
 demjson.dumps = demjson.encode
@@ -141,18 +146,22 @@ class CKeditorView(BrowserView):
         context = aq_inner(self.context)
         return context.absolute_url()
 
+    def getWysiwygEditor(self):
+        """return current editor"""
+        tool = getToolByName(self.portal, 'portal_membership')
+        member = tool.getAuthenticatedMember()
+        member_editor = member.getProperty('wysiwyg_editor')
+        available_editors = getAvailableWysiwygEditors()
+        default_editor = getDefaultWysiwygEditor()
+        return getWysiwygEditor(member_editor, available_editors, default_editor)
+
     def _memberUsesCKeditor(self):
         """return True if member uses CKeditor"""
-        pm = getToolByName(self.portal, 'portal_membership')
-        member = pm.getAuthenticatedMember()
-        editor = member.getProperty('wysiwyg_editor')
+        editor = self.getWysiwygEditor()
         if editor == 'CKeditor':
             return True
         if editor != '':
             return False
-        # The member wants the default editor of the site.
-        pprops = getToolByName(self.portal, 'portal_properties')
-        editor = pprops.site_properties.getProperty('default_editor')
         return editor == 'CKeditor'
 
     def contentUsesCKeditor(self, fieldname=''):
