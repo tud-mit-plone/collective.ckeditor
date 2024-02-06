@@ -117,14 +117,16 @@ def to_registry(context):
     # clean up only if there are things to clean up
     if "ckeditor_properties" in ptool:
         props = ptool.ckeditor_properties
-        api.portal.set_registry_record(
-            "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.forcePasteAsPlainText",
-            props.forcePasteAsPlainText
-        )
+        if hasattr(props, "forcePasteAsPlainText"):
+            api.portal.set_registry_record(
+                "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.forcePasteAsPlainText",
+                props.forcePasteAsPlainText
+            )
 
-        api.portal.set_registry_record(
-            "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.skin",
-            props.skin
-        )
+        if hasattr(props, "skin"):
+            api.portal.set_registry_record(
+                "collective.ckeditor.browser.ckeditorsettings.ICKEditorSchema.skin",
+                props.skin
+            )
 
         ptool.manage_delObjects("ckeditor_properties")
